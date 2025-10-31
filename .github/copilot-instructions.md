@@ -54,13 +54,13 @@ The main application code lives in `ios-retro-gunner/` directory. This is a Capa
 
 ## Build and Development
 
-### Setup Commands
+### Initial Setup Commands (First Time)
 
 ```bash
 cd ios-retro-gunner
 npm install
 npm run build
-npx cap add ios
+npx cap add ios    # Run only once to create ios/ directory
 npm run sync
 ```
 
@@ -69,7 +69,7 @@ npm run sync
 - `npm run dev` - Start Vite development server
 - `npm run build` - Build production bundle
 - `npm run sync` - Sync web assets to iOS project
-- Open the `ios/` project in Xcode to build and run on iOS
+- Open the `ios/` project in Xcode to build and run on iOS (requires initial setup with `npx cap add ios`)
 
 ### Project Structure
 
@@ -94,10 +94,12 @@ When working with this project, ignore or avoid modifying:
 
 - `node_modules/` - Dependencies
 - `dist/` - Build output
-- `ios/` - Generated iOS project (synced from web build)
+- `ios/` - Generated iOS project (created by Capacitor, synced from web build)
 - `*.log` - Log files
 - `*.zip` - Build artifacts
 - `.replit` - Replit configuration (not relevant for iOS development)
+
+**Note**: The `ios/` directory is generated when you run `npx cap add ios` for the first time.
 
 ## Testing and Quality
 
