@@ -4,7 +4,8 @@
   "description": "This repository now contains the Capacitor + Vite project prepared for building RetroGunner on iOS. The application source lives inside `ios-retro-gunner/`.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node run-dev.js"
   },
   "keywords": [],
   "author": "",
