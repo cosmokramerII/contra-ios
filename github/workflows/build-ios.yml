@@ -1,0 +1,68 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install pnpm
+        run: npm install -g pnpm
+      
+      - name: Install dependencies
+        working-directory: ./ios-retro-gunner
+        run: pnpm install
+      
+      - name: Build web app
+        working-directory: ./ios-retro-gunner
+        run: pnpm run build
+      
+      - name: Setup iOS project
+        working-directory: ./ios-retro-gunner
+        run: |
+          npx cap add ios || true
+          npx cap sync ios
+      
+      - name: Install CocoaPods
+        working-directory: ./ios-retro-gunner/ios/App
+        run: pod install
+      
+      - name: Build and Archive
+        working-directory: ./ios-retro-gunner/ios/App
+        run: |
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+      
+      - name: Create IPA
+        working-directory: ./ios-retro-gunner/ios/App
+        run: |
+          mkdir -p build/Payload
+          cp -r build/App.xcarchive/Products/Applications/App.app build/Payload/
+          cd build && zip -r RetroGunner.ipa Payload
+      
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetroGunner-iOS
+          path: ./ios-retro-gunner/ios/App/build/RetroGunner.ipa
+          retention-days: 30
