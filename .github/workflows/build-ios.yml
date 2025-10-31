@@ -32,7 +32,13 @@ jobs:
     
     - name: Add iOS platform
       working-directory: ios-retro-gunner
-      run: npx cap add ios || echo "iOS platform may already exist"
+      run: |
+        # Check if iOS platform already exists
+        if [ ! -d "ios" ]; then
+          npx cap add ios
+        else
+          echo "iOS platform already exists, skipping add step"
+        fi
     
     - name: Sync Capacitor
       working-directory: ios-retro-gunner
