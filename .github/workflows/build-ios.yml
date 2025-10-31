@@ -59,38 +59,19 @@ jobs:
     - name: Export IPA
       working-directory: ios-retro-gunner/ios/App
       run: |
-        # Create export options plist for ad-hoc distribution
-        cat > ExportOptions.plist << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>stripSwiftSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
-            <false/>
-        </dict>
-        </plist>
-        EOF
+        # Create Payload directory for IPA
+        mkdir -p build/Payload
         
-        # Export the archive to IPA
-        xcodebuild \
-          -exportArchive \
-          -archivePath $PWD/build/App.xcarchive \
-          -exportPath $PWD/build \
-          -exportOptionsPlist ExportOptions.plist \
-          -allowProvisioningUpdates \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO
+        # Copy the built app to Payload directory
+        cp -r build/App.xcarchive/Products/Applications/App.app build/Payload/
         
-        # Rename the IPA file
-        mv build/*.ipa build/RetroGunner-unsigned.ipa || \
-        cp -r build/App.xcarchive/Products/Applications/App.app build/Payload && \
-        cd build && zip -r RetroGunner-unsigned.ipa Payload
+        # Create IPA by zipping the Payload directory
+        cd build
+        zip -r RetroGunner-unsigned.ipa Payload
+        
+        # Display IPA info
+        ls -lh RetroGunner-unsigned.ipa
+        unzip -l RetroGunner-unsigned.ipa | head -20
     
     - name: Upload IPA artifact
       uses: actions/upload-artifact@v3
