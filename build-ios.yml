@@ -1,0 +1,119 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build web app
+      run: npm run build
+    
+    - name: Create iOS app structure
+      run: |
+        mkdir -p ContraGame.app
+        cp -r dist/* ContraGame.app/
+        
+    - name: Create Info.plist
+      run: |
+        cat > ContraGame.app/Info.plist << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleIdentifier</key>
+            <string>com.contra.game</string>
+            <key>CFBundleName</key>
+            <string>Contra</string>
+            <key>CFBundleDisplayName</key>
+            <string>Contra</string>
+            <key>CFBundleVersion</key>
+            <string>1.0.0</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>CFBundleExecutable</key>
+            <string>ContraGame</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>LSRequiresIPhoneOS</key>
+            <true/>
+            <key>UILaunchStoryboardName</key>
+            <string>LaunchScreen</string>
+            <key>UIRequiredDeviceCapabilities</key>
+            <array>
+                <string>armv7</string>
+            </array>
+            <key>UISupportedInterfaceOrientations</key>
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+            </array>
+            <key>UIViewControllerBasedStatusBarAppearance</key>
+            <false/>
+            <key>UIStatusBarHidden</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+    
+    - name: Create executable wrapper
+      run: |
+        cat > ContraGame.app/ContraGame << 'EOF'
+        #!/bin/bash
+        # iOS app wrapper
+        open index.html
+        EOF
+        chmod +x ContraGame.app/ContraGame
+    
+    - name: Create Payload structure
+      run: |
+        mkdir -p Payload
+        mv ContraGame.app Payload/
+    
+    - name: Create unsigned IPA
+      run: |
+        zip -r ContraGame-unsigned.ipa Payload
+    
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ContraGame-iOS-unsigned
+        path: ContraGame-unsigned.ipa
+        retention-days: 30
+    
+    - name: Create release
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        name: Build ${{ github.run_number }}
+        body: |
+          Automated build of Contra iOS app
+          
+          **Download:** ContraGame-unsigned.ipa
+          
+          This is an unsigned IPA. You'll need to sign it before installing on your device.
+        files: ContraGame-unsigned.ipa
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
