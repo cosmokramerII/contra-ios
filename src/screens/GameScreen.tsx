@@ -8,6 +8,7 @@ import {
   Animated,
   PanResponder,
 } from 'react-native';
+import { audioManager } from '../lib/audioManager';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -41,8 +42,8 @@ export default function GameScreen() {
 
   const bulletIdCounter = useRef(0);
   const enemyIdCounter = useRef(0);
-  const gameLoop = useRef<NodeJS.Timeout>();
-  const enemySpawnInterval = useRef<NodeJS.Timeout>();
+  const gameLoop = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const enemySpawnInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   // Player movement with touch
   const panResponder = useRef(
@@ -59,10 +60,19 @@ export default function GameScreen() {
     })
   ).current;
 
+  // Initialize audio
+  useEffect(() => {
+    audioManager.initialize();
+    return () => {
+      audioManager.cleanup();
+    };
+  }, []);
+
   // Shoot bullet
   const shoot = () => {
     if (!gameStarted || gameOver) return;
     
+    audioManager.playSound('shoot');
     const newBullet: Bullet = {
       id: bulletIdCounter.current++,
       x: playerPosition.x + 40,
@@ -103,6 +113,7 @@ export default function GameScreen() {
               Math.abs(enemy.x - playerPosition.x) < 40 &&
               Math.abs(enemy.y - playerPosition.y) < 40
             ) {
+              audioManager.playSound('explosion');
               setGameOver(true);
               return false;
             }
@@ -128,6 +139,7 @@ export default function GameScreen() {
                   remainingBullets.splice(bulletIndex, 1);
                 }
                 remainingEnemies.splice(enemyIndex, 1);
+                audioManager.playSound('hit');
                 setScore((prev) => prev + 10);
               }
             });
