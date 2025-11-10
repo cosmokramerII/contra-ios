@@ -1,16 +1,27 @@
 {
-  "name": "workspace",
+  "name": "contra-retro-gunner",
   "version": "1.0.0",
-  "description": "This repository now contains the Capacitor + Vite project prepared for building RetroGunner on iOS. The application source lives inside `ios-retro-gunner/`.",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "clear": "expo start --clear"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "ios-sim": "^9.0.0",
-    "py": "^0.0.0"
-  }
+    "expo": "~54.0.23",
+    "expo-av": "^16.0.7",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
 }
