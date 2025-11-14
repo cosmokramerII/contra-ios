@@ -20,22 +20,17 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: 'ios-retro-gunner/package-lock.json'
     
     - name: Install dependencies
-      run: |
-        cd ios-retro-gunner
-        npm install
+      run: npm install
     
     - name: Build web app
-      run: |
-        cd ios-retro-gunner
-        npm run build
+      run: npm run build
     
     - name: Create iOS app structure
       run: |
         mkdir -p ContraGame.app
-        cp -r ios-retro-gunner/dist/* ContraGame.app/
+        cp -r dist/* ContraGame.app/
         
     - name: Create Info.plist
       run: |
@@ -99,7 +94,7 @@ jobs:
         zip -r ContraGame-unsigned.ipa Payload
     
     - name: Upload IPA artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: ContraGame-iOS-unsigned
         path: ContraGame-unsigned.ipa
